@@ -1,0 +1,53 @@
+1 rem Aditya Singhvi, 2020-10-02, A simple bubble sort 
+
+4 rem be = the initial system time
+5 be = ti
+
+10 data 15
+15 data 57, 70, 79, 28, 42, 66, 81, 25, 14, 29, 19, 36, 19, 86, 15
+
+19 rem the length of the list of values
+20 read n
+30 dim v(n)
+
+39 rem inputs data values into an array
+40 for i = 1 to n
+45 read v(i)
+50 next i
+
+52 print "Original:"
+54 rem goes to print array subroutine
+55 gosub 1200
+
+60 s = 0
+70 for i = 1 to (n - 1)
+74 rem goes to swap subroutine
+75 if v(i) > v(i + 1) then gosub 1000
+80 next i
+90 if s > 0 then goto 60
+
+95 print "Sorted:"
+99 rem goes to print array subroutine
+100 gosub 1200
+
+103 rem print time elapsed
+104 et = ti - be
+105 print "Jiffies Elapsed:"; et
+107 print "Seconds Elapsed:"; et/60
+110 end
+
+
+999 rem swap subroutine
+1000 t = v(i)
+1002 v(i) = v(i + 1)
+1004 v(i + 1) = t
+1006 s = 1
+1008 return
+
+
+1199 rem print array subroutine
+1200 for i = 1 to n 
+1205 print i; v(i)
+1210 next i
+1215 return
+

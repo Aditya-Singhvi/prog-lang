@@ -1,0 +1,32 @@
+Aditya Singhvi
+Sept 10 2020
+
+Given two N-Byte (1<= N <= 255) integers with values V1 and V2, the program adds the two integers and stores the upto 256-byte sum S at a predecided memory location. V1 is stored starting at address A1 to (A1 + N), V2 is stored starting at address A2 to (A2 + N), S starting at A3 to (A3 + N + 1), and N at A4. All integers are stored in little-endian format. For this program,
+
+A1: $0600 to $0600 + N		First value to be added	(V1)
+A2: $0700 to $0700 + N		Second value to be added (V2)
+A3: $0800 to $0800 + N + 1	Sum (S)
+A4: $0900			Size of integers to be added (N)
+
+The program makes use of the x-register as an index variable that starts at 0 and increments with each pass of the loop. This acts as an offset counter to access the correct byte of A1, A2, A3, as the byte stored at (X + A?) is accessed with each pass of the loop. The y-register is used as the loop counter, beginning at N and being decremented by 1 every loop cycle to ensure that the loop breaks once N bytes have been read from each integer. 
+--
+ASSEMBLY:
+
+ADDRESS	BYTES		CODE		LABEL		COMMENTS
+
+0500	18		clc				clears flags
+0501	a2 00		ldx #$0				initializes x-register to 0 
+0503	ac 00 09	ldy $0900			loads the y-register with the number of bytes N
+0506	bd 00 06	lda $0600, x	loop		start of loop; loads the next byte of V1 into accumulator
+0509	7d 00 07	adc $0700, x			adds the corresponding byte of V2 into acc. with carry
+050C	9d 00 08	sta $0800, x			stores the sum of the bytes to the corresponding A3 byte
+050F	e8		inx				increments x-register to ensure correct offset		
+0510	88		dey				decrements y-register (loop counter)
+0511	d0 f3		bne $loop	endLoop		if the y-reg didn't decrement to 0, branches to loop label
+0513	a9 00		lda #$00			loads value 0 into accumulator			
+0515	69 00		adc #$00			adds 0, essentially adding the carry flag
+0517	9d 00 08	sta $0800, x			stores the carry flag at $(A3 + N + 1), the last byte of S
+051A	00		brk				break! 
+
+
+

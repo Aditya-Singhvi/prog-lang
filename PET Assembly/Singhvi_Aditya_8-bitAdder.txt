@@ -1,0 +1,21 @@
+//@author Aditya Singhvi
+//@version Sept 3 2020
+//
+//This code is designed to add two 8-bit numbers in the VICE PET emulator and store the result as a 16-bit integer. 
+//The values to be added are stored in addresses $04F0 (A1) and $04F1 (A2). These values are loaded into the accumulator and added. The low-bit of the sum stored at address $04F0 while the high-bit (the carry) will be stored at $04F1.  
+
+//.m 04f0 04f0 to store values v1, v2
+
+0500	18		CLC		clears flags
+0501	ad f0 04	LDA $04f0	1st val into accumulator
+0504 	6d f1 04	ADC $04f1	adds 2nd val into acc.
+0507	8d f0 04	STA $04f0	stores acc. into A1
+050A	a9 00		LDA #$00	loads 00 into acc
+050C	69 00		ADC #$00	adds 00, essentially adding carry flag
+050E	8d f1 04	STA $04f1	stores acc into A2
+0511	00		BRK		break
+
+//.g 0500
+//.m 04f0 04f0 to check.
+
+ 

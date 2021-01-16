@@ -1,0 +1,9 @@
+0500	AE FF 04 	LDX $04FF	//Load number stored at address 04FF 
+					//into x-register
+
+0503	CA		DEX		//Decrement x-register
+
+0504	D0 FD 		BNE -3		//Branch back to DEX if last DEX
+					//did not set x-reg to 0
+
+0506	00		BRK		//break 		

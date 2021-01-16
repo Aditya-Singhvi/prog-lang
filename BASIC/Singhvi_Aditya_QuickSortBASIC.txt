@@ -1,0 +1,178 @@
+1 rem comment comment
+
+10 data 18
+11 data 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12
+12 data 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
+
+20 read n
+25 dim v(n)
+30 for i = 1 to n
+35 read v(i)
+40 next i
+
+50 print "Original:"
+55 gosub 1200
+
+60 print "Enter B for BubbleSort, Q for QuickSort, S for SelectionSort"
+65 input "Which sorting method would you like to use"; so$
+
+70 print so$
+75 t1% = sgn((asc(so$)-asc("b")) and sgn(asc(so$)-asc("B")))
+80 t2% = sgn((asc(so$)-asc("q")) and sgn(asc(so$)-asc("Q")))
+85 t3% = sgn((asc(so$)-asc("s")) and sgn(asc(so$)-asc("S")))
+90 if t1% = 0 then gosub 300
+95 if t2% = 0 then gosub 400
+100 if t3% = 0 then gosub 500
+105 if sgn(t1% and t2% and t3%) <> 0 then goto 60
+
+110 print "Sorted:"
+115 gosub 1200
+
+120 print "Jiffies Elapsed:"; et
+125 print "Seconds Elapsed:"; et/60
+
+130 end
+
+
+
+300 ?"BubbleSort!"
+305 be = ti
+310 s = 0
+320 for i = 1 to (n - 1)
+325 if v(i) > v(i + 1) then s1 = i : s2 = i+1: gosub 1000
+330 next i
+340 if s > 0 then goto 310
+345 et = ti - be
+350 return
+
+
+
+400 ?"QuickSort!"
+405 be = ti
+410 dim lo(n)
+415 dim hi(n)
+420 lt = 0
+425 ht = 0
+429 dim pa(n)
+430 pt = 0
+435 l1 = 1
+440 gosub 1300
+445 h1 = n
+450 gosub 1350
+455 gosub 600
+460 et = ti - be
+465 return
+
+
+500 ?"SelectionSort!"
+505 be = ti
+510 for k = 1 to n - 1
+515 gosub 1600
+520 s1 = k
+525 s2 = mi
+530 gosub 1000
+535 next k
+540 et = ti - b e
+545 return
+
+
+600 rem quicksort subroutine
+610 if lo(lt - 1) >= hi(ht - 1) then goto 690
+620 gosub 800 
+
+630 l1 = lo(lt - 1)
+635 gosub 1300
+640 h1 = pa(pt - 1) - 1
+645 gosub 1350
+650 gosub 600 
+
+660 l1 = pa(pt - 1) + 1
+665 gosub 1300
+670 h1 = hi(ht - 1)
+675 gosub 1350
+680 gosub 600
+
+685 gosub 1520
+690 gosub 1400
+695 gosub 1450
+700 return
+
+
+800 rem partition subroutine
+805 l = lo(lt - 1)
+810 h = hi(ht - 1)
+815 pv = v(l)
+817 si = l + 1
+
+820 for j = l + 1 to h
+825 if v(j) < pv then s1 = si: s2 = j: gosub 1000: si = si + 1
+830 next j 
+
+840 s1 = l
+845 s2 = si - 1
+850 gosub 1000
+855 p1 = si - 1
+860 gosub 1500
+900 return
+
+
+999 rem swap subroutine (indices s1, s2; flag s)
+1000 t = v(s1)
+1002 v(s1) = v(s2)
+1004 v(s2) = t
+1006 s = 1
+1008 return
+
+
+1199 rem print array subroutine
+1200 for i = 1 to n 
+1205 print i; v(i)
+1210 next i
+1215 return
+
+
+1300 rem push onto lo stack (stored in l1)
+1305 lo(lt) = l1
+1310 lt = lt + 1
+1315 return
+
+
+1350 rem push onto hi stack (stored in h1)
+1355 hi(ht) = h1
+1360 ht = ht + 1
+1365 return
+
+
+1400 rem pop from lo stack (return to l1)
+1405 lt = lt - 1
+1410 l1 = lo(lt)
+1415 return
+
+
+1450 rem pop from hi stack (return to h1)
+1455 ht = ht - 1
+1460 h1 = hi(ht)
+1465 return
+
+
+1500 rem push onto pa stack (stored in p1)
+1505 pa(pt) = p1
+1510 pt = pt + 1
+1515 return
+
+
+1520 rem pop from pa stack (return to p1)
+1525 pt = pt - 1
+1530 p1 = pa(pt)
+1535 return
+
+1595 rem find min index in array, starting with index k
+1600 mi = k
+1605 for d = k to n
+1610 if vi(d) < vi(mi) then mi = d
+1615 next d
+1620 return
+
+
+
+

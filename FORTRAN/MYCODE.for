@@ -1,0 +1,23 @@
+C ADITYA SINGHVI
+C PROG LANG, PERIOD 3
+C NOV 2 2020
+
+      PROGRAM MYCODE
+      
+      CHARACTER(LEN=11) :: STR
+      STR = 'Hello World'
+
+      CALL HELLO(STR)
+
+      STOP
+      END PROGRAM
+
+
+      SUBROUTINE HELLO(S)
+      CHARACTER(LEN=11) :: S
+      
+      WRITE(*,100) S
+  100 FORMAT(A11)
+
+      RETURN
+      END

@@ -1,0 +1,103 @@
+Dr. Eric R. Nelson
+September 15, 2020
+
+This program will clear the screen memory by writing spaces to the 2000 bytes associated with the screen starting at $8000. After clearing the screen it updates the PET cursor position by adjusting the three system values in zero page associated with the PET cursor. The screen is cleared from high memory down.
+
+There are 2000 bytes of screen memory (2000 = $07D0). We are going to use indirect indexed addressing to access the screen using zero page addresses $01 and $02 (call it v1) for the pointer. We initially populate those addresses with #$D0 and #$87, respectively, to represent the address $87D0 which is the last byte of the screen. We push the current values of $01 and $02 on to the stack so we can restore them when we are done (we don't want to break BASIC). We store a space character, #$20, at (v1),y where y is an offset into the segment starting at the pointer high byte value in v1+1 (initially #$87). We then decrement y until we reach 0, then we write a space there as well and decrement y again to set it to #$FF in preparation for the next segment. We then decrement the segment address at $02 by using the x-register (rather than doing a subtraction of 1). If the high byte of the pointer address (i.e., the segment address) is #$7F then we are done. At that point we do a little magic to set the PET cursor position to the upper left corner.
+
+*=$033A		; Where the code resides (second cassette buffer which is usually a safe place to put things like this)
+
+loop1 = $034A
+loop2 = $034C
+
+v1 = $01		; zero page pointer (2 bytes) which is initialized to $87D0, the top of screen memory
+
+			; Push the values at v1 (address $01) and v1+1 (address $02) on the stack
+	lda v1		; so we can restore them later. We don't
+	pha		; want to break BASIC. We will pop them at the
+	lda v1+1	; end to restore the original zero page vector values
+	pha		; at $01 and $02
+
+	lda #$00	; The pointer will start at $8700 in v1 while the y-register will have the initial #$D0 offset
+	sta v1		; 
+	lda #$87	; This byte is the segment address, since the low byte of the pointer will always be zero.
+	sta v1+1	; 
+
+	ldy #$D0	; This is the initial offset from $8700 so $87D0 is the last byte on the screen
+
+loop1	lda #$20	; space character (used for clearing the screen)
+
+loop2	sta (v1),y	; write spaces to the current segment from high address to low
+	dey
+	bne loop2
+	sta (v1),y	; write a space to the zero position in the current segment
+	dey             ; y will now be #$FF so we need to decrement what's in $02 (the high byte of the current screen address pointer)
+
+	ldx v1+1	; now decrement the high byte of the pointer by using the x-register and decrementing it
+	dex
+	stx v1+1
+	txa		; Now test if we are at segment $7F which is no longer on the screen which starts at segment $80 (address $8000)
+	cmp #$7F        ; If one less than $80 then we have filled the entire screen with spaces.
+	bne loop1	; If not a match then we have to clear this segment.
+
+	pla		; restore the vales at v1 and v1+1
+	sta v1+1	; We pop them off the stack in the reverse order
+	pla		; from how we pushed them there
+	sta v1
+
+			;Move the PET cursor to the home position (requires system specific knowledge and so is a bit of magic)
+			;We do this by setting the row, column, and character under the cursor
+			;to the now known value of 0,0,#$20
+	lda #$20	;SPACE is now the
+	sta $A9		;character under the cursor.
+	lda #0		;Top left is column=0 and line=0
+	sta $C6		;Cursor Column on Current Line
+	sta $D8		;Current Cursor Physical Line Number 
+	brk		; replace with RTS (hex 60) if called from BASIC using "sys 826"
+s
+Paste the following by code into system and then g 033A to execute it.
+
+.:  033A a5 01 48 a5 02 48 a9 00
+.:  0342 85 01 a9 87 85 02 a0 d0
+.:  034A a9 20 91 01 88 d0 fb 91
+.:  0352 01 88 a6 02 ca 86 02 8a
+.:  035A c9 7f d0 ec 68 85 02 68
+.:  0362 85 01 a2 20 85 a9 a9 00
+.:  036A 85 c6 85 d8 00
+
+
+The disassembly is...
+
+.C:033a  A5 01       LDA $01
+.C:033c  48          PHA
+.C:033d  A5 02       LDA $02
+.C:033f  48          PHA
+.C:0340  A9 00       LDA #$00
+.C:0342  85 01       STA $01
+.C:0344  A9 87       LDA #$87
+.C:0346  85 02       STA $02
+.C:0348  A0 D0       LDY #$D0
+.C:034a  A9 20       LDA #$20
+.C:034c  91 01       STA ($01),Y
+.C:034e  88          DEY
+.C:034f  D0 FB       BNE $034C
+.C:0351  91 01       STA ($01),Y
+.C:0353  88          DEY
+.C:0354  A6 02       LDX $02
+.C:0356  CA          DEX
+.C:0357  86 02       STX $02
+.C:0359  8A          TXA
+.C:035a  C9 7F       CMP #$7F
+.C:035c  D0 EC       BNE $034A
+.C:035e  68          PLA
+.C:035f  85 02       STA $02
+.C:0361  68          PLA
+.C:0362  85 01       STA $01
+.C:0364  A2 20       LDX #$20
+.C:0366  85 A9       STA $A9
+.C:0368  A9 00       LDA #$00
+.C:036a  85 C6       STA $C6
+.C:036c  85 D8       STA $D8
+.C:036e  00          BRK
+
+

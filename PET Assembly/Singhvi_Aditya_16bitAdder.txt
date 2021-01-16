@@ -1,0 +1,27 @@
+16-bit adder
+Aditya Singhvi
+Sept. 8 2020
+
+Given two 16-byte integers V1 and V2 stored beginning at addresses A1 and A2, respectively, in little-endian format, the program adds the two, placing the 24-bit sum in little-endian format beginning at address A3. 
+
+For this code, A1: 0410, A2: 0420, A3: 0430. 
+--
+
+0500	18		CLC			Clear registers
+0501	AD 10 04	LDA $A1			Load lo-bit of V1	
+0504	6D 20 04	ADC $A2			Add lo-bit of V2
+0507	8D 30 04	STA $A3			Store result at A3
+050A	AD 11 04	LDA $(A1 + 1)		Load hi-bit of V1
+050D	6D 21 04	LDA $(A2 + 1)		Add hi-bit of V2 w/ carry
+0510	8D 31 04	STA $(A3 + 1)		Store result at A3+1
+0513	A9 00		LDA #$00		Load 00 into Accumulator
+0515	69 00		ADC #$00		Place value of carry flag into acc.
+0517	8D 32 04	STA $(A3 + 2)		Store carry value at A3 + 2
+0519	00		BRK			Break
+
+--
+HEX DUMP:
+.: 0500 18 AD 10 04 6D 20 04 8D
+.: 0508 30 04 AD 11 04 6D 21 04
+.: 0510 8D 31 04 A9 00 69 00 8D
+.: 0518 32 04 00 

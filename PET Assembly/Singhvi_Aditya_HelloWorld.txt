@@ -1,0 +1,55 @@
+Aditya Singhvi
+Sept 23 2020
+
+Given a string of length less than or equal to 255 bytes encoded at a predecided memory location S with a 2-byte cursor offset stored at C, the program prints the string to the location on the screen indicated by the cursor offset and updates the cursor by adding the length of the string. This allows the program to be called repeatedly without manually altering the cursor offset. 
+
+The screen memory begins at address $8000 and extends until address $87D0. The cursor offset at C, stored in little-endian format, is added to #$8000 to find the location where printing should begin. The String is stored with a starting byte specifying the length of the string (at S), with the actual characters of the string beginning at ($S + #$1) and extending at most till ($S + #$FF). The string is encoded in PETSCII, a description for which is provided below the code. 
+
+The program first adds the cursor offset stored at C to $8000, the starting address of the screen, and stores the result at $01 and $02 in little-endian format. The program then loads the length of the string (at address S) into the y-register, and  prints the string backwards, starting from the last character and looping until the y-register hits 0 and no characters are left to print. Indirect indexed addressing is used with the starting print location stored at $01 to determine where to store the characters. After the string has been printed, the 1-byte length of the string (at S) is added to the 2-byte cursor offset (at C) and stored at C, updating the location of the cursor. 
+
+Note: The value of the cursor is not checked; errors may arise if the specified offset is off-screen.
+
+cursorLo, cursorHi: 	$0420, $0421 	(2-byte cursor location in little endian format)
+str: 			$0700 		(start of where string is located, with length specified at $0700)
+scrLo, scrHi: 		$01, $02	(zero-page address where the current starting screen address is stored)
+
+--
+
+0500	18			clc		;Clears flags.
+0501 	ad 20 04		lda cursorLo	;Adds the cursor stored at $0420, $0421
+0504 	85 01			sta scrLo	;to the starting screen value of 
+0506	ad 21 04		lda cursorHi	;#$8000 and stores it at $01, $02. 
+0509	69 80			adc #$80	;Low bit + #$00 (so no addition), High bit + #$80.
+050B	85 02			sta scrHi	;
+050D	ac 00 07		ldy str		;Loads y-register with length of the string
+0510	f0 1a			beq end		;If length of the string is 0, exits out of the program. 
+0512	b9 00 07	loop	lda str, y	;Loads the accumulator with character at (y + the start address of the string).
+0515	91 01			sta (scrLo), y	;Stores it at the correct screen address.
+0517	88			dey		;Decrements y each time a char is printed, moving backwards through the string.
+0518	d0 f8			bne loop	;When y reaches 0, breaks out of the loop; otherwise, prints next char.
+051a	18			clc		;Clears flags from previous addition.
+051b	ad 00 07		lda str		;Loads accumulator with length of string.
+051e	6d 20 04		adc cursorLo	;Adds accumulator to low byte of cursor value and
+0521	8d 20 04		sta cursorLo	;stores it back into the low byte of the cursor value.
+0524	ad 21 03		lda cursorHi	;
+0527	69 00			adc #$00	;Adds carry flag to high byte of cursor value and stores
+0529	8d 21 04		sta cursorHi	;it back into the high byte.
+052C	00		end	brk		;Break! We're done!
+
+-- 
+Sample Strings:
+
+"Hello World"
+OB 48 05 0c 0c 0f 20 57 0f 12 0c 04
+
+"Hi Dr. Nelson!"
+0E 48 09 20 44 12 2e 20 4e 05 0c 13 0f 0e 21
+
+PETSCII Description:
+Lowercase alphabet in sequence from 01 to 1A.
+Uppercase alphabet in sequence from 41 to 5A.
+Digits from 30 to 39. 
+Various other symbols in unused spaces from 00 to 5A. 
+5B to 7F are control characters. 
+
+Shifting this alphabet up by $80 highlights the characters in the PET. 

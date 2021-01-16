@@ -1,0 +1,196 @@
+1 rem Aditya Singhvi, 2020-10-12, An array sorter w/ BubbleSort, 
+2 rem SelectionSort, and limited QuickSort.
+
+5 ?"Welcome to the sorter."
+6 input "What length should the array be"; n$
+7 n = val(n$)
+8 input "What should the lower bound on a number in the range be"; r1$
+9 r1 = val(r1$)
+10 input "What should the higher bound on a number in the range be"; r2$
+11 r2 = val(r2$)
+12 r3 = r2 - r1
+ 
+15 dim v(n)
+20 for i = 1 to n 
+25 v(i) = int((r3 * rnd(0)) + r1)
+30 next i
+
+50 print "Original:"
+55 gosub 1200
+
+60 print "Enter B for BubbleSort, S for SelectionSort, Q for QuickSort"
+62 print "QuickSort not guaranteed to work for length > 18."
+65 input "Which sorting method would you like to use"; so$
+
+70 print so$
+75 t1% = sgn((asc(so$)-asc("b")) and sgn(asc(so$)-asc("B")))
+80 t2% = sgn((asc(so$)-asc("s")) and sgn(asc(so$)-asc("S")))
+85 t3% = sgn((asc(so$)-asc("q")) and sgn(asc(so$)-asc("Q")))
+90 if t1% = 0 then gosub 300 : rem BubbleSort
+95 if t2% = 0 then gosub 400 : rem SelectionSort
+100 if t3% = 0 then gosub 500: rem QuickSort
+105 if sgn(t1% and t2% and t3%) <> 0 then goto 60
+
+110 print "Sorted:"
+115 gosub 1200
+
+120 print "Jiffies Elapsed:"; et
+125 print "Seconds Elapsed:"; et/60
+130 end
+
+
+295 rem Bubble Sort works by continually swapping adjacent vals
+296 rem if they are out of order. Stops when a sweep of the arr
+297 rem is completed with no swaps necessary. O(n^2). 
+300 ?"BubbleSort!"
+305 be = ti
+310 s = 0
+320 for i = 1 to (n - 1)
+325 if v(i) > v(i + 1) then s1 = i : s2 = i+1: gosub 1000
+330 next i
+340 if s > 0 then goto 310
+345 et = ti - be : rem sets elapsed time
+350 return
+
+
+395 rem Selection sort selects the minimum of the array and 
+396 rem brings it to the front of the array repeatedly until
+397 rem all elements are sorted. O(n^2)
+400 ?"SelectionSort!"
+405 be = ti
+
+410 for k = 1 to (n - 1)
+415 gosub 1600
+420 s1 = k
+425 s2 = mi
+430 gosub 1000
+435 next k
+
+440 et = ti - be : rem sets elapsed time 
+445 return
+
+
+495 rem QuickSort is a recursive algorithm that selects a 
+496 rem pivot element, and places the element at the correct
+497 rem place within the array. It then quicksorts the array 
+498 rem to the left of the pivot and to the right. O(n log n)
+500 ?"QuickSort!"
+505 be = ti
+
+510 dim lo(n)    :rem stack for low values
+515 dim hi(n)    :rem stack for high values
+520 lt = 0       :rem top of low stack
+525 ht = 0       :rem top of high stack
+529 dim pa(n)    :rem stack for partition index values
+530 pt = 0       :rem top of partition stack
+
+535 l1 = 1       :rem initialize low array value to 1
+540 gosub 1300
+545 h1 = n       :rem initialize high array value to n
+550 gosub 1350
+
+555 gosub 600    :rem quicksort subroutine
+560 et = ti - be :rem sets elapsed time
+565 return
+
+
+
+600 rem quicksort subroutine
+610 if lo(lt - 1) >= hi(ht - 1) then goto 690 :rem base case
+620 gosub 800 :rem partition array
+
+628 rem recursion on lower part (before partition)
+630 l1 = lo(lt - 1)
+635 gosub 1300
+640 h1 = pa(pt - 1) - 1
+645 gosub 1350
+650 gosub 600 
+
+658 rem recursion on high part (after partition)
+660 l1 = pa(pt - 1) + 1
+665 gosub 1300
+670 h1 = hi(ht - 1)
+675 gosub 1350
+680 gosub 600
+
+685 gosub 1520  : rem pop partition index
+690 gosub 1400  : rem pop lo value from stack
+695 gosub 1450  : rem pop high value from stack
+700 return
+
+
+800 rem partition subroutine
+805 l = lo(lt - 1) :rem element at top of stack
+810 h = hi(ht - 1)
+815 pv = v(l)      : rem pivot is value at low index
+817 si = l + 1
+
+820 for j = l + 1 to h
+825 if v(j) < pv then s1 = si: s2 = j: gosub 1000: si = si + 1
+830 next j 
+
+840 s1 = l
+845 s2 = si - 1
+850 gosub 1000   :rem put pivot element in correct place
+855 p1 = si - 1
+860 gosub 1500   :rem push pivot index onto stack
+900 return
+
+
+999 rem swap subroutine (indices s1, s2; flag s)
+1000 t = v(s1)
+1002 v(s1) = v(s2)
+1004 v(s2) = t
+1006 s = 1
+1008 return
+
+
+1199 rem print array subroutine (prints v)
+1200 for i = 1 to n 
+1205 print i; v(i)
+1210 next i
+1215 return
+
+
+1595 rem find min index in array v, starting with index k
+1600 mi = k
+1605 for d = k to n
+1610 if v(d) < v(mi) then mi = d
+1615 next d
+1620 return
+
+
+1299 rem QuickSort variable stack operations for recursion
+
+1300 rem push onto lo stack (stored in l1)
+1305 lo(lt) = l1
+1310 lt = lt + 1
+1315 return
+
+1350 rem push onto hi stack (stored in h1)
+1355 hi(ht) = h1
+1360 ht = ht + 1
+1365 return
+
+1400 rem pop from lo stack (return to l1)
+1405 lt = lt - 1
+1410 l1 = lo(lt)
+1415 return
+
+1450 rem pop from hi stack (return to h1)
+1455 ht = ht - 1
+1460 h1 = hi(ht)
+1465 return
+
+1500 rem push onto pa stack (stored in p1)
+1505 pa(pt) = p1
+1510 pt = pt + 1
+1515 return
+
+1520 rem pop from pa stack (return to p1)
+1525 pt = pt - 1
+1530 p1 = pa(pt)
+1535 return
+
+
+
