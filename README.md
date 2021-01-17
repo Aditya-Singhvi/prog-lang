@@ -1,4 +1,4 @@
-# Prog-Lang
+# prog-lang
 Projects and programs from the Programming Languages class taken in Fall 2020 at The Harker School with Dr. Eric Nelson. 
 
 # PLAGIARISM NOTICE
